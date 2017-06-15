@@ -13,14 +13,29 @@ def connect():
 
 def deleteMatches():
     """Remove all the match records from the database."""
-
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("delete from matches;")
+    conn.commit()
+    cur.close()
+    conn.close()
 
 def deletePlayers():
     """Remove all the player records from the database."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("delete from players;")
+    conn.commit()
+    cur.close()
+    conn.close()
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("select count(*) from players;")
+    return cur.fetchone()[0]
 
 
 def registerPlayer(name):
@@ -32,6 +47,12 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("insert into players (name) values (%s);", (name,))
+    conn.commit()
+    cur.close()
+    conn.close()
 
 
 def playerStandings():
@@ -47,6 +68,13 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("select players.id, players.name, count(w.winner) as wins, count(w.winner) + count(l.loser) as games\
+                    from players left join matches as w on players.id = w.winner left join matches as l on players.id = l.loser\
+                    group by players.id\
+                    order by wins desc;")
+    return cur.fetchall()
 
 
 def reportMatch(winner, loser):
@@ -56,6 +84,12 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("insert into matches (winner, loser) values (%s, %s);", (winner, loser))
+    conn.commit()
+    cur.close()
+    conn.close()
  
  
 def swissPairings():
@@ -73,5 +107,9 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.close()
+    conn.close()
 
 
