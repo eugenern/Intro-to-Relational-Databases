@@ -9,7 +9,7 @@
 -- drop the current tournament database to start fresh
 drop database if exists tournament;
 
--- the tournament database
+-- create and connect to the tournament database
 create database tournament;
 \c tournament;
 

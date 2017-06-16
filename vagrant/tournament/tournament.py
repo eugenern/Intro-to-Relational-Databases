@@ -36,7 +36,10 @@ def countPlayers():
     conn = connect()
     cur = conn.cursor()
     cur.execute("select count(*) from players;")
-    return cur.fetchone()[0]
+    count = cur.fetchone()[0]
+    cur.close()
+    conn.close()
+    return count
 
 
 def registerPlayer(name):
@@ -71,11 +74,15 @@ def playerStandings():
     """
     conn = connect()
     cur = conn.cursor()
+    # left join players table with matches table twice so that both won and lost matches for a player can be grouped
     cur.execute("select players.id, players.name, count(w.winner) as wins, count(w.winner) + count(l.loser) as games "
                     "from players left join matches as w on players.id = w.winner left join matches as l on players.id = l.loser "
                     "group by players.id "
                     "order by wins desc, games;")
-    return cur.fetchall()
+    standings = cur.fetchall()
+    cur.close()
+    conn.close()
+    return standings
 
 
 def reportMatch(winner, loser):
@@ -111,11 +118,20 @@ def swissPairings():
     conn = connect()
     cur = conn.cursor()
     standings = playerStandings()
+
+    # try to account for some situations that this function doesn't cover
     if not standings:
         raise Exception("Must have players!")
     if len(standings) % 2 != 0:
         raise Exception("Must have an even number of players!")
     if any(player[3] != standings[-1][3] for player in standings):
         raise Exception("Everyone should have played the same number of games!")
-    return [(standings[i][0:2] + standings[i+1][0:2]) for i in range(0, len(standings), 2)]
+
+    # convert standings to pairings by taking two players at a time and
+    # concatenating their ids and names into single tuples
+    pairings = [(standings[i][0:2] + standings[i+1][0:2]) for i in range(0, len(standings), 2)]
+
+    cur.close()
+    conn.close()
+    return pairings
 
