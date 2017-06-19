@@ -22,7 +22,7 @@ def deleteMatches():
 
     query = "TRUNCATE matches;"
     cur.execute(query)
-    
+
     db.commit()
     cur.close()
     db.close()
@@ -34,7 +34,7 @@ def deletePlayers():
 
     query = "TRUNCATE players CASCADE;"
     cur.execute(query)
-    
+
     db.commit()
     cur.close()
     db.close()
@@ -67,7 +67,7 @@ def registerPlayer(name):
     query = "INSERT INTO players (name) VALUES (%s);"
     param = (name,)
     cur.execute(query, param)
-    
+
     db.commit()
     cur.close()
     db.close()
@@ -76,8 +76,8 @@ def registerPlayer(name):
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place, or
+    a player tied for first place if there is currently a tie.
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -88,11 +88,14 @@ def playerStandings():
     """
     db, cur = connect()
 
-    # left join players table with matches table twice so that both won and lost matches for a player can be grouped
-    query = ("SELECT players.id, players.name, COUNT(w.winner) AS wins, COUNT(w.winner) + COUNT(l.loser) AS games "
-                "FROM players LEFT JOIN matches AS w ON players.id = w.winner LEFT JOIN matches AS l ON players.id = l.loser "
-                "GROUP BY players.id "
-                "ORDER BY wins DESC, games;")
+    # left join players table with matches table twice so that
+    # both won and lost matches for a player can be grouped
+    query = ("SELECT players.id, players.name, COUNT(w.winner) AS wins, "
+             "COUNT(w.winner) + COUNT(l.loser) AS games "
+             "FROM players LEFT JOIN matches AS w ON players.id = w.winner "
+             "LEFT JOIN matches AS l ON players.id = l.loser "
+             "GROUP BY players.id "
+             "ORDER BY wins DESC, games;")
     cur.execute(query)
     standings = cur.fetchall()
 
@@ -113,7 +116,7 @@ def reportMatch(winner, loser):
     query = "INSERT INTO matches (winner, loser) VALUES (%s, %s);"
     param = (winner, loser)
     cur.execute(query, param)
-    
+
     db.commit()
     cur.close()
     db.close()
@@ -144,11 +147,12 @@ def swissPairings():
     if len(standings) % 2 != 0:
         raise Exception("Must have an even number of players!")
     if any(player[3] != standings[-1][3] for player in standings):
-        raise Exception("Everyone should have played the same number of games!")
+        raise Exception("Everyone must have played the same number of games!")
 
     # convert standings to pairings by taking two players at a time and
     # concatenating their ids and names into single tuples
-    pairings = [(standings[i][0:2] + standings[i+1][0:2]) for i in range(0, len(standings), 2)]
+    pairings = [(standings[i][0:2] + standings[i+1][0:2])
+                for i in range(0, len(standings), 2)]
 
     cur.close()
     db.close()
