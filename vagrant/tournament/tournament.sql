@@ -7,21 +7,21 @@
 -- these lines here.
 
 -- drop the current tournament database to start fresh
-drop database if exists tournament;
+DROP DATABASE IF EXISTS tournament;
 
 -- create and connect to the tournament database
-create database tournament;
+CREATE DATABASE tournament;
 \c tournament;
 
 -- table of players (id and name)
-create table players (
-	id serial primary key,
+CREATE TABLE players (
+	id serial PRIMARY KEY,
 	name text
 );
 
 -- table of match results between players
-create table matches (
-	id serial primary key,
-	winner integer references players (id),
-	loser integer references players (id)
+CREATE TABLE matches (
+	id serial PRIMARY KEY,
+	winner integer REFERENCES players (id),
+	loser integer REFERENCES players (id)
 );
